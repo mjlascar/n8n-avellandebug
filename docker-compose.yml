@@ -29,12 +29,23 @@ services:
       N8N_ENCRYPTION_KEY: ${N8N_ENCRYPTION_KEY}
       TZ: America/Argentina/Buenos_Aires
 
+      EXECUTIONS_DATA_PRUNE: "true" # Activa el borrado automático
+      EXECUTIONS_DATA_MAX_AGE: 168 # Guarda solo los últimos 7 días (168 horas)
+      EXECUTIONS_DATA_PRUNE_MAX_COUNT: 50000 # O borra si superás los 50.000 registros
+      EXECUTIONS_PROCESS_DATABASE_BINARIES: "true" # Ayuda a que los archivos pesados no saturen la RAM
+
     volumes:
       - n8n_data:/home/node/.n8n
     networks:
       - n8n_network
     depends_on:
       - postgres
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 400M
 
   caddy:
     image: caddy:2
@@ -81,6 +92,12 @@ services:
       - INSTALLATION_ENV=docker
     networks:
       - n8n_network
+    deploy:
+      resources:
+        limits:
+          memory: 1G 
+        reservations:
+          memory: 512M # Le asegura 512MB al arrancar
 
   chatwoot-worker:
     image: chatwoot/chatwoot:latest
