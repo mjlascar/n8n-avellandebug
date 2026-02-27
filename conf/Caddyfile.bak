@@ -1,0 +1,3 @@
+n8n.avellandebug.com.ar {
+  reverse_proxy n8n:5678
+}

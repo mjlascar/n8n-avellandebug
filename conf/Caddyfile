@@ -1,3 +1,7 @@
 n8n.avellandebug.com.ar {
   reverse_proxy n8n:5678
 }
+
+chat.avellandebug.com.ar {
+  reverse_proxy chatwoot:3000
+}

@@ -50,6 +50,58 @@ services:
     networks:
       - n8n_network
 
+    # --- SERVICIOS DE CHATWOOT ---
+  redis:
+    image: redis:7-alpine
+    container_name: chatwoot_redis
+    restart: unless-stopped
+    command: ["sh", "-c", "redis-server --requirepass \"$REDIS_PASSWORD\""]
+    volumes:
+      - redis_data:/data
+    networks:
+      - n8n_network
+
+  chatwoot:
+    image: chatwoot/chatwoot:latest
+    container_name: chatwoot_web
+    restart: unless-stopped
+    depends_on:
+      - postgres
+      - redis
+    environment:
+      - FRONTEND_URL=https://${CHATWOOT_DOMAIN}
+      - SECRET_KEY_BASE=${CHATWOOT_SECRET_KEY_BASE}
+      - POSTGRES_DATABASE=chatwoot
+      - POSTGRES_HOST=postgres
+      - POSTGRES_USERNAME=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - REDIS_URL=redis://default:${REDIS_PASSWORD}@redis:6379
+      - RAILS_ENV=production
+      - INSTALLATION_ENV=docker
+    networks:
+      - n8n_network
+
+  chatwoot-worker:
+    image: chatwoot/chatwoot:latest
+    container_name: chatwoot_worker
+    restart: unless-stopped
+    depends_on:
+      - postgres
+      - redis
+    command: ['bundle', 'exec', 'sidekiq', '-C', 'config/sidekiq.yml']
+    environment:
+      - FRONTEND_URL=https://${CHATWOOT_DOMAIN}
+      - SECRET_KEY_BASE=${CHATWOOT_SECRET_KEY_BASE}
+      - POSTGRES_DATABASE=chatwoot
+      - POSTGRES_HOST=postgres
+      - POSTGRES_USERNAME=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - REDIS_URL=redis://default:${REDIS_PASSWORD}@redis:6379
+      - RAILS_ENV=production
+      - INSTALLATION_ENV=docker
+    networks:
+      - n8n_network
+
 networks:
   n8n_network:
 
@@ -58,3 +110,4 @@ volumes:
   caddy_config:
   n8n_postgres_data:
   n8n_data:
+  redis_data:
