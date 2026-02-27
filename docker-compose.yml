@@ -11,6 +11,13 @@ services:
       - n8n_postgres_data:/var/lib/postgresql/data
     networks:
       - n8n_network
+    shm_size: '128mb' # Aumenta la memoria compartida para evitar errores de Postgres en Docker
+    deploy:
+      resources:
+        limits:
+          memory: 768M  # Límite máximo para la base de datos
+        reservations:
+          memory: 256M  # Memoria mínima garantizada
 
   n8n:
     image: n8nio/n8n:latest
@@ -60,6 +67,12 @@ services:
       - caddy_config:/config
     networks:
       - n8n_network
+    deploy:
+      resources:
+        limits:
+          memory: 256M  # Caddy es eficiente pero Go consume algo de RAM
+        reservations:
+          memory: 64M
 
     # --- SERVICIOS DE CHATWOOT ---
   redis:
@@ -71,6 +84,12 @@ services:
       - redis_data:/data
     networks:
       - n8n_network
+    deploy:
+      resources:
+        limits:
+          memory: 256M  # Redis es muy liviano
+        reservations:
+          memory: 64M
 
   chatwoot:
     image: chatwoot/chatwoot:latest
@@ -119,6 +138,12 @@ services:
       - INSTALLATION_ENV=docker
     networks:
       - n8n_network
+    deploy:
+      resources:
+        limits:
+          memory: 1G    # Sidekiq puede ser pesado, le damos hasta 1GB
+        reservations:
+          memory: 512M
 
 networks:
   n8n_network:
