@@ -55,7 +55,7 @@ services:
     image: redis:7-alpine
     container_name: chatwoot_redis
     restart: unless-stopped
-    command: ["sh", "-c", "redis-server --requirepass \"$REDIS_PASSWORD\""]
+    command: redis-server --requirepass {$REDIS_PASSWORD}
     volumes:
       - redis_data:/data
     networks:
