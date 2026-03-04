@@ -1,7 +1,38 @@
-n8n.avellandebug.com.ar {
-  reverse_proxy n8n:5678
+{
+email fanl3tcraft@gmail.com
 }
 
-chat.avellandebug.com.ar {
-  reverse_proxy chatwoot:3000
+(security_headers) {
+header {
+Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+X-XSS-Protection "1; mode=block"
+X-Content-Type-Options "nosniff"
+X-Frame-Options "SAMEORIGIN"
+Referrer-Policy "strict-origin-when-cross-origin"
+-Server
+}
+}
+
+{$DOMAIN} {
+import security_headers
+encode zstd gzip
+log {
+output file /var/log/caddy/n8n_access.log {
+roll_size 10mb
+roll_keep 5
+}
+}
+reverse_proxy n8n:5678
+}
+
+{$EVOLUTION_DOMAIN} {
+import security_headers
+encode zstd gzip
+log {
+output file /var/log/caddy/evolution_access.log {
+roll_size 10mb
+roll_keep 5
+}
+}
+reverse_proxy evolution-api:8080
 }
